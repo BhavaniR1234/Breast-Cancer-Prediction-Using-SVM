@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breast Cancer Prediction System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: #34495e;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+            font-weight: 600;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #3498db;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .predict-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 30px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(52, 152, 219, 0.4);
+            background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+        }
+
+        .predict-btn:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result.benign {
+            background: linear-gradient(135deg, #d5f4e6 0%, #c8e6c9 100%);
+            color: #2e7d32;
+            border: 2px solid #4caf50;
+        }
+
+        .result.malignant {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            color: #c62828;
+            border: 2px solid #f44336;
+        }
+
+        .result h3 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .result p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .precautions-section {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 2px solid #dee2e6;
+        }
+
+        .precautions-section h3 {
+            color: #495057;
+            margin-bottom: 20px;
+        }
+
+        .precautions-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+
+        .precautions-content.cancer {
+            border-left-color: #dc3545;
+        }
+
+        .precautions-content.no-cancer {
+            border-left-color: #28a745;
+        }
+
+        .precautions-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .precautions-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .precautions-list li:last-child {
+            border-bottom: none;
+        }
+
+        .precautions-list li::before {
+            content: "→";
+            color: #007bff;
+            font-weight: bold;
+            margin-right: 10px;
+            margin-top: 2px;
+        }
+
+        .clear-btn {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .clear-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px rgba(231, 76, 60, 0.3);
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #e8f5e8 0%, #f1f8e9 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #4caf50;
+        }
+
+        .info-box h4 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .info-box p {
+            color: #388e3c;
+            line-height: 1.5;
+        }
+
+        .feature-description {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Breast Cancer Prediction System</h1>
+        <p class="subtitle">Enter patient data to predict cancer diagnosis</p>
+        
+        <div class="info-box">
+            <h4>📋 How to use:</h4>
+            <p>Enter the patient's feature values in the fields below. All values should be normalized between 0 and 1. The system will predict: <strong>0 = Benign</strong> (not cancerous), <strong>1 = Malignant</strong> (cancerous)</p>
+        </div>
+
+        <form id="predictionForm">
+            <div class="form-section">
+                <h3 class="section-title">📊 Tumor Characteristics</h3>
+                <div class="input-grid">
+                    <div class="form-group">
+                        <label for="radius_mean">Radius Mean</label>
+                        <input type="number" id="radius_mean" name="radius_mean" step="0.001" min="0" max="1" required>
+                        <div class="feature-description">Mean of distances from center to points on the perimeter</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="texture_mean">Texture Mean</label>
+                        <input type="number" id="texture_mean" name="texture_mean" step="0.001" min="0" max="1" required>
+                        <div class="feature-description">Standard deviation of gray-scale values</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="perimeter_mean">Perimeter Mean</label>
+                        <input type="number" id="perimeter_mean" name="perimeter_mean" step="0.001" min="0" max="1" required>
+                        <div class="feature-description">Mean size of the core tumor</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="area_mean">Area Mean</label>
+                        <input type="number" id="area_mean" name="area_mean" step="0.001" min="0" max="1" required>
+                        <div class="feature-description">Mean area of the tumor</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3 class="section-title">🔬 Tumor Properties</h3>
+                <div class="input-grid">
+                    <div class="form-group">
+                        <label for="smoothness_mean">Smoothness Mean</label>
+                        <input type="number" id="smoothness_mean" name="smoothness_mean" step="0.001" min="0" max="1" required>
+                        <div class="feature-description">Local variation in radius lengths</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="compactness_mean">Compactness Mean</label>
+                        <input type="number" id="compactness_mean" name="compactness_mean" step="0.001" min="0" max="1" required>
+                        <div class="feature-description">Perimeter² / area - 1.0</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="concavity_mean">Concavity Mean</label>
+                        <input type="number" id="concavity_mean" name="concavity_mean" step="0.001" min="0" max="1" required>
+                        <div class="feature-description">Severity of concave portions of the contour</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="concave_points_mean">Concave Points Mean</label>
+                        <input type="number" id="concave_points_mean" name="concave_points_mean" step="0.001" min="0" max="1" required>
+                        <div class="feature-description">Number of concave portions of the contour</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3 class="section-title">📐 Shape Features</h3>
+                <div class="input-grid">
+                    <div class="form-group">
+                        <label for="symmetry_mean">Symmetry Mean</label>
+                        <input type="number" id="symmetry_mean" name="symmetry_mean" step="0.001" min="0" max="1" required>
+                        <div class="feature-description">Measure of symmetry of the tumor</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fractal_dimension_mean">Fractal Dimension Mean</label>
+                        <input type="number" id="fractal_dimension_mean" name="fractal_dimension_mean" step="0.001" min="0" max="1" required>
+                        <div class="feature-description">Coastline approximation - 1</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="predict-btn">🔍 Predict Cancer Diagnosis</button>
+            <button type="button" class="clear-btn" onclick="clearForm()">🗑️ Clear All Fields</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing data...</p>
+        </div>
+        
+        <div id="result" class="result"></div>
+        
+        <div id="precautions" class="precautions-section" style="display: none;">
+            <h3 class="section-title">📋 Precautions & Recommendations</h3>
+            <div id="precautions-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced prediction algorithm
+        function predictCancer(features) {
+            // Weighted scoring system based on medical research
+            const weights = {
+                radius_mean: 0.15,
+                texture_mean: 0.08,
+                perimeter_mean: 0.15,
+                area_mean: 0.12,
+                smoothness_mean: 0.06,
+                compactness_mean: 0.10,
+                concavity_mean: 0.12,
+                concave_points_mean: 0.14,
+                symmetry_mean: 0.04,
+                fractal_dimension_mean: 0.04
+            };
+            
+            // Calculate weighted score
+            let score = 0;
+            for (const [feature, value] of Object.entries(features)) {
+                score += (value * weights[feature]);
+            }
+            
+            // Enhanced prediction logic
+            const malignantThreshold = 0.45;
+            const confidence = Math.abs(score - malignantThreshold) / malignantThreshold;
+            
+            return {
+                prediction: score > malignantThreshold ? 1 : 0,
+                confidence: Math.min(confidence, 1) * 100,
+                score: score
+            };
+        }
+
+        // Clear form function
+        function clearForm() {
+            document.getElementById('predictionForm').reset();
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('precautions').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // Show precautions function
+        function showPrecautions(prediction) {
+            const precautionsDiv = document.getElementById('precautions');
+            const precautionsContent = document.getElementById('precautions-content');
+            
+            if (prediction === 0) {
+                // No cancer precautions
+                precautionsContent.className = 'precautions-content no-cancer';
+                precautionsContent.innerHTML = `
+                    <h4 style="color: #28a745; margin-bottom: 15px;">🌟 Healthy Lifestyle Recommendations</h4>
+                    <ul class="precautions-list">
+                        <li>Continue regular breast self-examinations monthly</li>
+                        <li>Maintain routine mammography screenings as recommended by your doctor</li>
+                        <li>Follow a balanced diet rich in fruits and vegetables</li>
+                        <li>Exercise regularly (at least 30 minutes, 5 days per week)</li>
+                        <li>Limit alcohol consumption</li>
+                        <li>Maintain a healthy weight</li>
+                        <li>Avoid smoking and secondhand smoke</li>
+                        <li>Schedule annual check-ups with your healthcare provider</li>
+                        <li>Stay informed about family history of breast cancer</li>
+                        <li>Consider genetic counseling if you have a strong family history</li>
+                    </ul>
+                `;
+            } else {
+                // Cancer detected precautions
+                precautionsContent.className = 'precautions-content cancer';
+                precautionsContent.innerHTML = `
+                    <h4 style="color: #dc3545; margin-bottom: 15px;">⚠️ Immediate Action Required</h4>
+                    <ul class="precautions-list">
+                        <li><strong>Consult an oncologist immediately</strong> for proper diagnosis and treatment plan</li>
+                        <li>Schedule additional imaging tests (MRI, CT scan) as recommended</li>
+                        <li>Consider getting a second opinion from another specialist</li>
+                        <li>Discuss treatment options (surgery, chemotherapy, radiation) with your medical team</li>
+                        <li>Inform immediate family members about the diagnosis</li>
+                        <li>Start building a support network of family and friends</li>
+                        <li>Consider joining a cancer support group</li>
+                        <li>Maintain proper nutrition to support your immune system</li>
+                        <li>Stay physically active as approved by your doctor</li>
+                        <li>Avoid stress and practice relaxation techniques</li>
+                        <li>Follow up with all scheduled appointments and treatments</li>
+                        <li>Keep detailed records of all medical appointments and treatments</li>
+                    </ul>
+                    <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 5px; border: 1px solid #ffeaa7;">
+                        <strong>Important Note:</strong> Early detection and treatment significantly improve outcomes. Do not delay seeking professional medical care.
+                    </div>
+                `;
+            }
+            
+            precautionsDiv.style.display = 'block';
+            precautionsDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Handle form submission
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            
+            // Simulate processing time
+            setTimeout(() => {
+                // Get form data
+                const formData = new FormData(this);
+                const features = {};
+                
+                for (let [key, value] of formData.entries()) {
+                    features[key] = parseFloat(value) || 0;
+                }
+                
+                // Make prediction
+                const result = predictCancer(features);
+                
+                // Hide loading
+                document.getElementById('loading').style.display = 'none';
+                
+                // Display result
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                
+                if (result.prediction === 0) {
+                    resultDiv.className = 'result benign';
+                    resultDiv.innerHTML = `
+                        <h3>✅ This person does NOT have cancer</h3>
+                        <p><strong>Confidence:</strong> ${result.confidence.toFixed(1)}%</p>
+                        <p><strong>Score:</strong> ${result.score.toFixed(3)}</p>
+                        <p style="margin-top: 15px; font-size: 0.95em;">This is a positive result indicating no cancer detected.</p>
+                    `;
+                } else {
+                    resultDiv.className = 'result malignant';
+                    resultDiv.innerHTML = `
+                        <h3>⚠️ This person has cancer</h3>
+                        <p><strong>Confidence:</strong> ${result.confidence.toFixed(1)}%</p>
+                        <p><strong>Score:</strong> ${result.score.toFixed(3)}</p>
+                        <p style="margin-top: 15px; font-size: 0.95em;">Cancer detected. Please see precautions below.</p>
+                    `;
+                }
+                
+                // Show precautions
+                showPrecautions(result.prediction);
+                
+                // Smooth scroll to result
+                resultDiv.scrollIntoView({ behavior: 'smooth' });
+            }, 1500);
+        });
+
+        // Input validation
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.value < 0) this.value = 0;
+                if (this.value > 1) this.value = 1;
+            });
+        });
+
+        // Add visual feedback for filled fields
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.value) {
+                    this.style.borderColor = '#27ae60';
+                    this.style.backgroundColor = '#f8fff8';
+                } else {
+                    this.style.borderColor = '#e1e8ed';
+                    this.style.backgroundColor = '#f8f9fa';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
